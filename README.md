@@ -4,6 +4,24 @@ An AI-driven virtual receptionist ("Aria") designed for Aura Wellness Clinic. Th
 
 ---
 
+## Showcase & Demos
+
+### 1. Interactive Playground Simulator
+The playground simulator features a live SQLite database viewer, raw tool transaction logs, and diagnostic dashboards side-by-side with the chat.
+
+| Screenshot | Interactive Session Video |
+|---|---|
+| ![Playground Simulator Screenshot](docs/assets/simulator_screenshot.png) | ![Playground Simulator Demo Video](docs/assets/simulator_demo.webp) |
+
+### 2. Website Embedded Chat Widget
+The responsive floating chat widget overlay embedded on the main clinic website.
+
+| Screenshot | Interactive Session Video |
+|---|---|
+| ![Chat Widget Screenshot](docs/assets/widget_screenshot.png) | ![Chat Widget Demo Video](docs/assets/widget_demo.webp) |
+
+---
+
 ## Features
 
 - **Patient Registration & Profiling**: Automatically looks up existing profiles by sender's phone number or guides new patients through registration.
