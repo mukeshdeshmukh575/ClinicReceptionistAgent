@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura Wellness Clinic — Clinic Receptionist Agent Simulator & Backend</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: rgba(17, 24, 39, 0.75);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --whatsapp-green: #10b981;
+            --whatsapp-bg: #075e54;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #6366f1;
+            --danger-red: #ef4444;
+            --success-glow: 0 0 15px rgba(16, 185, 129, 0.3);
+            --blue-glow: 0 0 15px rgba(59, 130, 246, 0.3);
+            --purple-glow: 0 0 15px rgba(99, 102, 241, 0.3);
+            --red-glow: 0 0 20px rgba(239, 68, 68, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+        }
+
+        /* Header Style */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2.5rem;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--panel-border);
+            z-index: 10;
+        }
+
+        header .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        header .logo i {
+            font-size: 2rem;
+            color: var(--accent-cyan);
+            filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.5));
+        }
+
+        header .logo h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #fff 30%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 0.4rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--whatsapp-green);
+        }
+
+        header .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--whatsapp-green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.6; }
+            50% { transform: scale(1.15); opacity: 1; box-shadow: var(--success-glow); }
+            100% { transform: scale(0.9); opacity: 0.6; }
+        }
+
+        /* Layout Grid */
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 400px 1.1fr;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            flex-grow: 1;
+            height: calc(100vh - 85px);
+            max-height: calc(100vh - 85px);
+            overflow: hidden;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+                overflow-y: auto;
+                height: auto;
+                max-height: none;
+            }
+        }
+
+        /* Panel Glassmorphic Base */
+        .panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--panel-border);
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .panel-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--panel-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-size: 1.15rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .panel-title i {
+            color: var(--accent-cyan);
+        }
+
+        .panel-body {
+            padding: 1.25rem;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        /* --- COLUMN 1: DATABASE VIEW --- */
+        .db-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .db-tab {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--panel-border);
+            color: var(--text-secondary);
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .db-tab.active {
+            background: var(--accent-purple);
+            color: white;
+            border-color: transparent;
+            box-shadow: var(--purple-glow);
+        }
+
+        .db-tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+        }
+
+        .db-table-container {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--panel-border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+            padding: 0.75rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--panel-border);
+        }
+
+        td {
+            padding: 0.75rem;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-primary);
+        }
+
+        .status-pill {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .status-scheduled { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+        .status-rescheduled { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+        .status-cancelled { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .status-paid { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .status-pending { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+
+        /* --- COLUMN 2: WHATSAPP SIMULATOR --- */
+        .simulator-phone {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #0f1621;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 2px solid #222;
+        }
+
+        .phone-header {
+            background: #075e54;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .phone-user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .phone-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1rem;
+            background: linear-gradient(135deg, #a7f3d0 0%, #34d399 100%);
+        }
+
+        .phone-user-name {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .phone-user-name .name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: white;
+        }
+
+        .phone-user-name .status {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .phone-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--panel-border);
+        }
+
+        .phone-controls label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .phone-controls select {
+            flex-grow: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--panel-border);
+            color: white;
+            padding: 0.4rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            outline: none;
+        }
+
+        .phone-controls select option {
+            background-color: #0f1621;
+        }
+
+        .phone-chat-area {
+            flex-grow: 1;
+            background-color: #0b0f19;
+            background-image: radial-gradient(rgba(255,255,255,0.015) 1px, transparent 0);
+            background-size: 24px 24px;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 0.7rem 0.9rem;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            line-height: 1.4;
+            position: relative;
+            animation: slideIn 0.25s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .message-incoming {
+            background-color: #262d31;
+            color: #e9edef;
+            align-self: flex-start;
+            border-top-left-radius: 2px;
+        }
+
+        .message-outgoing {
+            background-color: #056162;
+            color: #e9edef;
+            align-self: flex-end;
+            border-top-right-radius: 2px;
+        }
+
+        .message-time {
+            font-size: 0.68rem;
+            color: rgba(255, 255, 255, 0.45);
+            text-align: right;
+            margin-top: 0.25rem;
+        }
+
+        .phone-input-bar {
+            background: #1f2c34;
+            padding: 0.6rem 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .phone-input-bar input {
+            flex-grow: 1;
+            background: #2a3942;
+            border: none;
+            outline: none;
+            color: white;
+            padding: 0.6rem 1rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+        }
+
+        .phone-input-bar button {
+            background: var(--whatsapp-green);
+            color: white;
+            border: none;
+            outline: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .phone-input-bar button:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        /* --- COLUMN 3: AGENT LOGS & DIAGNOSTICS --- */
+        .info-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-card-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+
+        .info-card-title i {
+            color: var(--accent-cyan);
+        }
+
+        .diag-log {
+            font-family: monospace;
+            font-size: 0.78rem;
+            color: #a7f3d0;
+            white-space: pre-wrap;
+            max-height: 150px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.6rem;
+            border-radius: 6px;
+            border-left: 3px solid var(--whatsapp-green);
+        }
+
+        .rag-source-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .rag-source-item {
+            background: rgba(6, 182, 212, 0.08);
+            border: 1px solid rgba(6, 182, 212, 0.15);
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: #c7d2fe;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .escalation-alert {
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px dashed rgba(239, 68, 68, 0.4);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            display: none;
+            animation: glow-red 2.5s infinite alternate;
+        }
+
+        @keyframes glow-red {
+            from { box-shadow: 0 0 10px rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); }
+            to { box-shadow: var(--red-glow); border-color: rgba(239, 68, 68, 0.8); }
+        }
+
+        .escalation-alert i {
+            font-size: 2rem;
+            color: var(--danger-red);
+            margin-bottom: 0.5rem;
+        }
+
+        .escalation-alert h4 {
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .escalation-alert p {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .safety-alert {
+            background: rgba(245, 158, 11, 0.1);
+            border: 2px dashed rgba(245, 158, 11, 0.4);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            display: none;
+        }
+
+        .safety-alert i {
+            font-size: 2rem;
+            color: #f59e0b;
+            margin-bottom: 0.5rem;
+        }
+
+        .safety-alert h4 {
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .safety-alert p {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+        
+        .api-badge {
+            background: #1e293b;
+            border: 1px solid var(--panel-border);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            color: var(--accent-cyan);
+            font-weight: 500;
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <i class="fa-solid fa-heart-pulse"></i>
+            <div>
+                <h1>Aura Wellness Clinic</h1>
+            </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+            <div class="api-badge"><i class="fa-solid fa-circle-nodes"></i> REST API Active</div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Clinic Receptionist Agent Online</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <!-- COLUMN 1: LIVE DATABASE VIEW -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fa-solid fa-database"></i>
+                    <span>Live Clinic Database</span>
+                </div>
+                <button onclick="fetchCurrentTable()" class="db-tab" style="max-width: 90px; padding: 0.35rem; display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
+                    <i class="fa-solid fa-arrows-rotate"></i> Sync
+                </button>
+            </div>
+            <div class="panel-body">
+                <div class="db-controls">
+                    <button class="db-tab active" onclick="switchDbTab('doctors')">Doctors</button>
+                    <button class="db-tab" onclick="switchDbTab('patients')">Patients</button>
+                    <button class="db-tab" onclick="switchDbTab('appointments')">Appointments</button>
+                    <button class="db-tab" onclick="switchDbTab('billing')">Invoices</button>
+                </div>
+                
+                <div class="db-table-container">
+                    <table id="db-table">
+                        <!-- Filled dynamically -->
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMN 2: WEB CHAT SIMULATOR -->
+        <div class="panel">
+            <div class="simulator-phone">
+                <!-- Phone Top Bar -->
+                <div class="phone-header">
+                    <div class="phone-user-info">
+                        <div class="phone-avatar">A</div>
+                        <div class="phone-user-name">
+                            <span class="name">Aria (Receptionist)</span>
+                            <span class="status">online</span>
+                        </div>
+                    </div>
+                    <div style="color: white; font-size: 1rem; cursor: pointer;">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </div>
+                </div>
+
+                <!-- Simulation Settings inside Phone -->
+                <div class="phone-controls">
+                    <label for="patient-selector"><i class="fa-solid fa-phone"></i> Sender:</label>
+                    <select id="patient-selector" onchange="onPatientSelectChange()">
+                        <option value="+919876543210">Sarah Jenkins (+91 98765 43210)</option>
+                        <option value="+15551234567">John Doe (+1 555-123-4567)</option>
+                        <option value="+919999888877">Unregistered Patient (+91 99998 88877)</option>
+                    </select>
+                </div>
+
+                <!-- Phone Chat Messages Area -->
+                <div class="phone-chat-area" id="chat-messages">
+                    <!-- Dynamic Messages -->
+                    <div class="message-bubble message-incoming">
+                        Hi! I am Aria, your virtual receptionist for Aura Wellness Clinic. How can I help you today?
+                        <div class="message-time">12:00 PM</div>
+                    </div>
+                </div>
+
+                <!-- Phone Bottom Input Bar -->
+                <div class="phone-input-bar">
+                    <input type="text" id="chat-input" placeholder="Type a message..." onkeydown="handleInputKeydown(event)">
+                    <button id="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMN 3: AGENT LOGS & DIAGNOSTICS -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fa-solid fa-microchip"></i>
+                    <span>Agent Insights & Diagnostics</span>
+                </div>
+            </div>
+            <div class="panel-body" style="display: flex; flex-direction: column; justify-content: flex-start;">
+                
+                <!-- Escalation Banner -->
+                <div class="escalation-alert" id="escalation-banner">
+                    <i class="fa-solid fa-headset"></i>
+                    <h4>Human Escalation Triggered</h4>
+                    <p id="escalation-reason">A receptionist has been notified to resume this conversation manually.</p>
+                </div>
+
+                <!-- Safety Filter Alert -->
+                <div class="safety-alert" id="safety-banner">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <h4>Message Flagged & Blocked</h4>
+                    <p id="safety-reason">The input query violated the clinic's conversation guardrails.</p>
+                </div>
+
+                <!-- Active Patient -->
+                <div class="info-card" style="margin-top: 1rem;">
+                    <div class="info-card-title">
+                        <i class="fa-solid fa-user-tag"></i>
+                        <span>Resolved Identity</span>
+                    </div>
+                    <div style="font-size: 0.88rem; display: flex; flex-direction: column; gap: 0.25rem;">
+                        <div><strong>Active Phone:</strong> <span id="active-phone-number">+919876543210</span></div>
+                        <div><strong>Patient Name:</strong> <span id="active-patient-name">Sarah Jenkins</span></div>
+                    </div>
+                </div>
+
+                <!-- RAG Sources Used -->
+                <div class="info-card">
+                    <div class="info-card-title">
+                        <i class="fa-solid fa-brain"></i>
+                        <span>RAG Knowledge Retrieval</span>
+                    </div>
+                    <div class="rag-source-list" id="rag-sources">
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); italic;">No RAG fetches triggered by current message.</div>
+                    </div>
+                </div>
+
+                <!-- Tool Logs -->
+                <div class="info-card" style="flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; margin-bottom: 0;">
+                    <div class="info-card-title">
+                        <i class="fa-solid fa-terminal"></i>
+                        <span>Tool Invocation Logs</span>
+                    </div>
+                    <div class="diag-log" id="tool-logs" style="flex-grow: 1; overflow-y: auto;">System initialized... Ready to capture tool transactions.</div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script Import -->
+    <script src="app.js"></script>
+</body>
+</html>
